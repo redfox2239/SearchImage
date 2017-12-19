@@ -17,7 +17,7 @@ extension SearchImageViewControllerDelegate {
     func didSelect(images: [UIImage]) {}
 }
 
-class SearchImageViewController: UIViewController, UICollectionViewDelegate, UICollectionViewDataSource, UICollectionViewDelegateFlowLayout, WKNavigationDelegate, SearchImageDetailViewControllerDelegate {
+class SearchImageViewController: UIViewController, UICollectionViewDelegate, UICollectionViewDataSource, UICollectionViewDelegateFlowLayout, WKNavigationDelegate, SearchImageDetailViewControllerDelegate, UITextFieldDelegate {
     
     @IBOutlet weak var searchImageCollectionView: UICollectionView!
     @IBOutlet weak var searchQueryTextField: UITextField!
@@ -146,12 +146,24 @@ class SearchImageViewController: UIViewController, UICollectionViewDelegate, UIC
                         ImageCacheManager.sharedInstance.setHtmlCache(key: self.searchImgURL, data: self.data, hrefData: self.hrefData)
                         webView.evaluateJavaScript(self.tapNextPageJS, completionHandler: nil)
                     }
+                    if imgURLs.count == 0 {
+                        self.showAlert(title: "みつかりませんでした", message: "さがす言葉をかえてみよう")
+                    }
                 }
+            }
+            else {
+                self.showAlert(title: "通信エラー", message: nil)
             }
         }
     }
+
+    func textFieldShouldReturn(_ textField: UITextField) -> Bool {
+        textField.endEditing(true)
+        return true
+    }
     
     @IBAction func tapSearchButton(_ sender: Any) {
+        searchQueryTextField.endEditing(true)
         guard let query = searchQueryTextField.text else {
             return
         }
@@ -192,6 +204,13 @@ class SearchImageViewController: UIViewController, UICollectionViewDelegate, UIC
         }
         selectedImages.append(image)
         selectedImageCollectionView.reloadData()
+    }
+    
+    func showAlert(title: String, message: String?) {
+        let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
+        let action = UIAlertAction(title: "OK", style: .default, handler: nil)
+        alert.addAction(action)
+        present(alert, animated: true, completion: nil)
     }
 }
 
